@@ -1,0 +1,12 @@
+:root {
+    font-family: sans-serif;
+}
+
+#drawingCanvas {
+    outline: 1px solid red;
+    position: fixed;
+    left: 0;
+    top: 0;
+    image-rendering: pixelated;
+    cursor: crosshair
+}
