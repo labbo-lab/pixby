@@ -1,3 +1,9 @@
 {
-    "liveServer.settings.ignoreFiles":["**"]
+    "liveServer.settings.ignoreFiles": [
+        "**"
+    ],
+    "files.associations": {
+        "*.embeddedhtml": "html",
+        "iostream": "cpp"
+    }
 }

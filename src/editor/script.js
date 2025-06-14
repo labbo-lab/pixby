@@ -3,6 +3,9 @@ onerror = e => alert(e)
 const drawingCanvas = document.querySelector("#drawingCanvas");
 const drawCtx = drawingCanvas.getContext("2d");
 
+const bufferDrawingCanvas = document.createElement("canvas");
+const bufferDrawCtx = bufferDrawingCanvas.getContext("2d");
+
 const primaryColorPicker = document.querySelector("#primaryColorPicker");
 const secondaryColorPicker = document.querySelector("#secondaryColorPicker");
 
@@ -45,7 +48,7 @@ const appState = {
         y: 0,
         leftDown: false,
         wheelDown: false
-    }
+    },
 }
 
 function setCameraPosition(x, y, relative = false) {
@@ -90,6 +93,9 @@ function setCanvasDimensions(width, height) {
 
     drawingCanvas.width = width;
     drawingCanvas.height = height;
+
+    bufferDrawingCanvas.width = width;
+    bufferDrawingCanvas.height = height;
 }
 
 function setPalette(palette) {
@@ -129,17 +135,21 @@ function screenToCanvas(x,y) {
     return [x,y]
 }
 
-function canvasToScreen(x,y) {
-
-}
-
-function createBuffer(context, w,h) {
-    
-}
-
-function renderBuffer(canvas, buffer, x = 0,y = 0) {
-
-}
+function range(start, end) {
+    start = Math.round(start);
+    end = Math.round(end);
+    result = [];
+    if (start > end) { // counting down
+      for (let i = start; i >= end; i--) {
+        result.push(i);
+      }
+    } else { // counting up
+      for (let i = start; i <= end; i++) {
+        result.push(i);
+      }
+    }
+    return result;
+  }
 
 /**
  * @description Set a pixel on the drawing canvas
@@ -159,21 +169,49 @@ function setPixel(context, x,y, color) {
     }
 }
 
+function transferBmp(canvas0, canvas1) {
+    canvas1.getContext("2d").drawImage(canvas0, 0, 0);
+}
+
+function linePoints(x0, y0, x1, y1) {
+    pointsList = [];
+
+    const dx = Math.abs(x1 - x0);
+    const dy = Math.abs(y1 - y0);
+    const sx = Math.sign(x1 - x0);
+    const sy = Math.sign(y1 - y0);
+    let err = dx - dy;
+  
+    while (true) {
+      pointsList.push({x:x0,y:y0})
+  
+      if (x0 === x1 && y0 === y1) break;
+  
+      const e2 = 2 * err;
+      if (e2 > -dy) { err -= dy; x0 += sx; }
+      if (e2 <  dx) { err += dx; y0 += sy; }
+    }
+    return pointsList;
+}
+  
 function handlePointerMove(e) {
     [appState.cursor.pX,appState.cursor.pY] = [appState.cursor.x,appState.cursor.y];
     [appState.cursor.x,appState.cursor.y] = [e.x,e.y];
     if (appState.cursor.wheelDown) {
-        setCameraPosition(appState.cursor.x - appState.cursor.pX, appState.cursor.y - appState.cursor.pY, true)
+        setCameraPosition(appState.cursor.x - appState.cursor.pX, appState.cursor.y - appState.cursor.pY, true);
         return;
     }
 
     if (appState.cursor.leftDown) {
-        setPixel(drawCtx, ...screenToCanvas(e.x,e.y), appState.selectedColors[0]);
+        for (let point of linePoints(...screenToCanvas(appState.cursor.pX, appState.cursor.pY), ...screenToCanvas(e.x,e.y))) {
+            setPixel(bufferDrawCtx, point.x,point.y, appState.selectedColors[0]);
+        }
+        transferBmp(bufferDrawingCanvas, drawingCanvas)
     }
 }
 
-function handlePointerDown() {appState.cursor.leftDown = true}
-function handlePointerUp() {appState.cursor.leftDown = false}
+function handlePointerDown() {appState.cursor.leftDown = true};
+function handlePointerUp() {appState.cursor.leftDown = false};
 
 function handleKeyDown(e) {
     switch (e.key) {
@@ -184,7 +222,7 @@ function handleKeyDown(e) {
             setCameraScale(.9, ...windowCenter(), true);
             break;
         case "x":
-            let tempColors = appState.selectedColors;
+            let tempColors = appState.selectedColors.slice(); // Slicing to create a shallow copy of the array, otherwise they sync up
             setPrimaryColor(tempColors[1]);
             setSecondaryColor(tempColors[0]);
     }
@@ -226,7 +264,7 @@ function handleColorPickerInputEvent(e) {
 [primaryColorPicker, secondaryColorPicker].forEach(picker => picker.addEventListener("change", handleColorPickerInputEvent));
 
 function setup() {
-    setCanvasDimensions(16,16);
+    setCanvasDimensions(32, 32);
     setCameraPosition(...windowCenter().map((component) => {return component - 8}));
 
     setCameraScale(10, ...windowCenter());

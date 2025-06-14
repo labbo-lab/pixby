@@ -2,11 +2,14 @@
     font-family: sans-serif;
 }
 
+body {
+}
+
 #drawingCanvas {
     outline: 1px solid red;
     position: fixed;
     left: 0;
     top: 0;
     image-rendering: pixelated;
-    cursor: crosshair
+    cursor: url("../assets/pen_cursor.png"), auto;
 }

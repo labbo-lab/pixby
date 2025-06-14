@@ -4,16 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pixby</title>
-    <link rel="stylesheet" href="style/main.css">
-    <script src="scripts/chroma.cjs"></script>
-    <script src="scripts/fenvector.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="./chroma.cjs"></script>
 </head>
 <body>
     <input type="color" id="primaryColorPicker">
     <input type="color" id="secondaryColorPicker">
+
+    <button id="toolButtonPen">Pen</button>
+    <button id="toolButtonFill">Fill</button>
+    <button id="toolButtonEraser">Eraser</button>
+
     <div id="output"></div>
+
     <canvas id="drawingCanvas"></canvas>
+    <svg id="overlay">
+        
+    </svg>
     <div class="paletteContainer"></div>
-    <script src="scripts/main.js"></script>
+    <script src="./script.js"></script>
 </body>
 </html>
